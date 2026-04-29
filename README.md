@@ -1,6 +1,7 @@
 # Hermes-Orchestra
 
 **Управление проектами и задачами внутри Hermes Agent.**
+<img width="1208" height="1269" alt="image" src="https://github.com/user-attachments/assets/bce06b6b-2e8a-4ec0-958b-8bc2ecd90421" />
 
 Персистентное SQLite-хранилище для проектов, задач, подзадач и истории исполнения. Всё живёт в `~/.hermes/state.db` — той же базе, что и сессии Hermes. Не теряется при `/reset`, перезапуске или смене сессии.
 
