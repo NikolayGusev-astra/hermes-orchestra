@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes-Orchestrator Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 2rem;
+      color: white;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { margin-bottom: 2rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
+    .pulse-dot {
+      width: 12px; height: 12px;
+      background: #22d3ee;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.025em; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; }
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    svg { width: 100%; min-width: 920px; display: block; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card-dot.rose { background: #fb7185; }
+    .card-dot.orange { background: #fb923c; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.75rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-row">
+        <div class="pulse-dot"></div>
+        <h1>Hermes-Orchestrator Architecture</h1>
+      </div>
+      <p class="subtitle">Оркестрация мульти-агентных проектов: один чистый Hermes управляет всеми</p>
+    </div>
+
+    <!-- Main Diagram -->
+    <div class="diagram-container">
+      <svg viewBox="0 0 1050 830">
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+          </marker>
+          <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+          </marker>
+          <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+          </marker>
+          <marker id="arrow-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+          </marker>
+          <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+          </marker>
+          <marker id="arrow-slate" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+          </marker>
+          <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb923c"/>
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)"/>
+
+        <!-- =============================================================
+             TITLE BADGE
+             ============================================================= -->
+        <rect x="30" y="20" width="990" height="30" rx="4" fill="rgba(52, 211, 153, 0.12)" stroke="#34d399" stroke-width="1" stroke-dasharray="6,3"/>
+        <text x="525" y="39" fill="#34d399" font-size="11" font-weight="700" text-anchor="middle">Hermes Orchestrator — единый control plane для мульти-агентных проектов</text>
+
+        <!-- =============================================================
+             LAYER 1: USER INPUT CHANNELS
+             ============================================================= -->
+
+        <!-- CLI -->
+        <rect x="80" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="140" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">CLI Terminal</text>
+        <text x="140" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">hermes chat</text>
+
+        <!-- Telegram -->
+        <rect x="230" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="290" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">Telegram</text>
+        <text x="290" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">топики / чаты</text>
+
+        <!-- Discord -->
+        <rect x="380" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="440" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">Discord</text>
+        <text x="440" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">каналы</text>
+
+        <!-- Email / Webhook -->
+        <rect x="530" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="590" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">API / Webhook</text>
+        <text x="590" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">HTTP POST</text>
+
+        <!-- Cron -->
+        <rect x="680" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="740" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">Cron</text>
+        <text x="740" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">расписание</text>
+
+        <!-- IDE (ACP) -->
+        <rect x="830" y="85" width="120" height="50" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="890" y="108" fill="white" font-size="11" font-weight="600" text-anchor="middle">IDE / VS Code</text>
+        <text x="890" y="124" fill="#94a3b8" font-size="9" text-anchor="middle">ACP protocol</text>
+
+        <!-- Arrow: channels down -->
+        <line x1="140" y1="135" x2="140" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <line x1="290" y1="135" x2="290" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <line x1="440" y1="135" x2="440" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <line x1="590" y1="135" x2="590" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <line x1="740" y1="135" x2="740" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <line x1="890" y1="135" x2="890" y2="185" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+
+        <!-- =============================================================
+             LAYER 2: HERMES ORCHESTRATOR
+             ============================================================= -->
+
+        <!-- Orchestrator boundary -->
+        <rect x="50" y="190" width="940" height="190" rx="12" fill="rgba(52, 211, 153, 0.05)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="70" y="212" fill="#34d399" font-size="11" font-weight="700">Hermes Orchestrator</text>
+        <text x="70" y="226" fill="#94a3b8" font-size="9">Профиль: orchestrator, чистая сессия, одна роль — управление проектами</text>
+
+        <!-- Core: AIAgent loop -->
+        <rect x="70" y="240" width="200" height="60" rx="8" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="170" y="263" fill="white" font-size="11" font-weight="600" text-anchor="middle">AIAgent Core</text>
+        <text x="170" y="279" fill="#94a3b8" font-size="9" text-anchor="middle">разбивка → dispatch → сбор</text>
+        <text x="170" y="292" fill="#34d399" font-size="8" text-anchor="middle">LLM loop + tool dispatch</text>
+
+        <!-- Skills Store -->
+        <rect x="310" y="240" width="180" height="60" rx="8" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="400" y="263" fill="white" font-size="11" font-weight="600" text-anchor="middle">Skills Store</text>
+        <text x="400" y="279" fill="#94a3b8" font-size="9" text-anchor="middle">reusable workflows</text>
+        <text x="400" y="292" fill="#fb923c" font-size="8" text-anchor="middle">как делать X для клиента Y</text>
+
+        <!-- Memory -->
+        <rect x="530" y="240" width="180" height="60" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="620" y="263" fill="white" font-size="11" font-weight="600" text-anchor="middle">Memory</text>
+        <text x="620" y="279" fill="#94a3b8" font-size="9" text-anchor="middle">user profile + facts</text>
+        <text x="620" y="292" fill="#a78bfa" font-size="8" text-anchor="middle">cross-session persistence</text>
+
+        <!-- Web Dashboard -->
+        <rect x="750" y="240" width="220" height="60" rx="8" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+        <text x="860" y="263" fill="white" font-size="11" font-weight="600" text-anchor="middle">Web Dashboard</text>
+        <text x="860" y="279" fill="#94a3b8" font-size="9" text-anchor="middle">FastAPI :9119</text>
+        <text x="860" y="292" fill="#22d3ee" font-size="8" text-anchor="middle">опционально, не обязательно</text>
+
+        <!-- Tools row -->
+        <rect x="70" y="315" width="620" height="50" rx="8" fill="rgba(8, 51, 68, 0.25)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="90" y="336" fill="#22d3ee" font-size="9" font-weight="600">Tools (registry):</text>
+
+        <rect x="200" y="322" width="100" height="36" rx="4" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="250" y="343" fill="white" font-size="9" font-weight="500" text-anchor="middle">project_create</text>
+
+        <rect x="310" y="322" width="95" height="36" rx="4" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="357" y="343" fill="white" font-size="9" font-weight="500" text-anchor="middle">task_assign</text>
+
+        <rect x="415" y="322" width="110" height="36" rx="4" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="470" y="343" fill="white" font-size="9" font-weight="500" text-anchor="middle">task_breakdown</text>
+
+        <rect x="535" y="322" width="90" height="36" rx="4" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1"/>
+        <text x="580" y="343" fill="white" font-size="9" font-weight="500" text-anchor="middle">dispatch</text>
+
+        <!-- Web dashboard REST -->
+        <rect x="750" y="315" width="220" height="50" rx="8" fill="rgba(8, 51, 68, 0.25)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="770" y="336" fill="#22d3ee" font-size="9" font-weight="600">REST API:</text>
+        <text x="770" y="352" fill="#94a3b8" font-size="8">GET /api/projects · POST /api/tasks</text>
+        <text x="770" y="362" fill="#94a3b8" font-size="8">PATCH /api/tasks/{id} · GET /api/status</text>
+
+        <!-- =============================================================
+             LAYER 3: PERSISTENT STORE
+             ============================================================= -->
+
+        <!-- Arrow: Orchestrator → Project Store -->
+        <line x1="170" y1="380" x2="170" y2="425" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+        <text x="185" y="408" fill="#94a3b8" font-size="9">persist</text>
+
+        <rect x="50" y="430" width="280" height="75" rx="8" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="190" y="455" fill="white" font-size="11" font-weight="600" text-anchor="middle">Project Store (SQLite)</text>
+        <text x="190" y="473" fill="#94a3b8" font-size="9" text-anchor="middle">~/.hermes/state.db</text>
+        <text x="190" y="490" fill="#a78bfa" font-size="8" text-anchor="middle">projects · tasks · status · assignee · история</text>
+
+        <!-- State DB visual -->
+        <rect x="370" y="430" width="250" height="75" rx="8" fill="rgba(76, 29, 149, 0.3)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="495" y="450" fill="#a78bfa" font-size="8" font-weight="600" text-anchor="middle">Таблицы</text>
+        <text x="495" y="465" fill="#94a3b8" font-size="8" text-anchor="middle">projects (id, name, client, status)</text>
+        <text x="495" y="480" fill="#94a3b8" font-size="8" text-anchor="middle">tasks (id, project_id, parent_id, title)</text>
+        <text x="495" y="495" fill="#94a3b8" font-size="8" text-anchor="middle">status, assignee, priority, deadline</text>
+
+        <!-- =============================================================
+             LAYER 4: DISPATCH — PARALLEL AGENT FLEET
+             ============================================================= -->
+
+        <!-- Arrow: Orchestrator down -->
+        <line x1="170" y1="505" x2="170" y2="555" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+        <text x="185" y="535" fill="#34d399" font-size="10" font-weight="700">delegate_task</text>
+
+        <!-- Fleet boundary -->
+        <rect x="50" y="560" width="940" height="220" rx="10" fill="rgba(34, 211, 238, 0.04)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,3"/>
+        <text x="70" y="580" fill="#22d3ee" font-size="11" font-weight="700">Agent Fleet — параллельное исполнение</text>
+
+        <!-- === Column 1: Hermes Workers === -->
+        <rect x="70" y="595" width="240" height="170" rx="8" fill="rgba(6, 78, 59, 0.06)" stroke="#34d399" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="190" y="614" fill="#34d399" font-size="9" font-weight="600" text-anchor="middle">Hermes Workers (subagents)</text>
+
+        <rect x="85" y="625" width="210" height="35" rx="6" fill="rgba(6, 78, 59, 0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="190" y="647" fill="white" font-size="10" font-weight="500" text-anchor="middle">Задача 1: backend API</text>
+
+        <rect x="85" y="668" width="210" height="35" rx="6" fill="rgba(6, 78, 59, 0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="190" y="690" fill="white" font-size="10" font-weight="500" text-anchor="middle">Задача 2: frontend UI</text>
+
+        <rect x="85" y="711" width="210" height="35" rx="6" fill="rgba(6, 78, 59, 0.35)" stroke="#34d399" stroke-width="1"/>
+        <text x="190" y="733" fill="white" font-size="10" font-weight="500" text-anchor="middle">Задача N: деплой</text>
+
+        <!-- === Column 2: ACP Agents === -->
+        <rect x="340" y="595" width="240" height="170" rx="8" fill="rgba(120, 53, 15, 0.06)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="460" y="614" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">ACP Agents</text>
+
+        <rect x="355" y="625" width="210" height="35" rx="6" fill="rgba(120, 53, 15, 0.25)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="460" y="647" fill="white" font-size="10" font-weight="500" text-anchor="middle">Claude Code</text>
+
+        <rect x="355" y="668" width="210" height="35" rx="6" fill="rgba(120, 53, 15, 0.25)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="460" y="690" fill="white" font-size="10" font-weight="500" text-anchor="middle">OpenAI Codex</text>
+
+        <rect x="355" y="711" width="210" height="35" rx="6" fill="rgba(120, 53, 15, 0.25)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="460" y="733" fill="white" font-size="10" font-weight="500" text-anchor="middle">Другой ACP-агент</text>
+
+        <!-- === Column 3: Terminal Agents / Other === -->
+        <rect x="610" y="595" width="240" height="170" rx="8" fill="rgba(251, 146, 60, 0.06)" stroke="#fb923c" stroke-width="1" stroke-dasharray="3,3"/>
+        <text x="730" y="614" fill="#fb923c" font-size="9" font-weight="600" text-anchor="middle">Terminal / MCP Agents</text>
+
+        <rect x="625" y="625" width="210" height="35" rx="6" fill="rgba(251, 146, 60, 0.15)" stroke="#fb923c" stroke-width="1"/>
+        <text x="730" y="647" fill="white" font-size="10" font-weight="500" text-anchor="middle">OpenClaw CLI</text>
+
+        <rect x="625" y="668" width="210" height="35" rx="6" fill="rgba(251, 146, 60, 0.15)" stroke="#fb923c" stroke-width="1"/>
+        <text x="730" y="690" fill="white" font-size="10" font-weight="500" text-anchor="middle">Gemini CLI</text>
+
+        <rect x="625" y="711" width="210" height="35" rx="6" fill="rgba(251, 146, 60, 0.15)" stroke="#fb923c" stroke-width="1"/>
+        <text x="730" y="733" fill="white" font-size="10" font-weight="500" text-anchor="middle">MCP-сервер / кастомный</text>
+
+        <!-- Dispatch arrows from orchestrator -->
+        <path d="M 170 555 Q 170 545 190 545 L 460 545 Q 480 545 480 555 L 480 593" fill="none" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+        <path d="M 170 555 Q 170 570 260 570 L 730 570 Q 820 570 820 580 L 820 593" fill="none" stroke="#fb923c" stroke-width="1.2" marker-end="url(#arrow-orange)"/>
+        <line x1="170" y1="555" x2="170" y2="593" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+
+        <!-- ACP dispatch arrow -->
+        <line x1="460" y1="555" x2="460" y2="593" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arrow-amber)"/>
+
+        <!-- Dispatch label -->
+        <text x="400" y="544" fill="#fbbf24" font-size="9" font-weight="600">ACP</text>
+        <text x="640" y="566" fill="#fb923c" font-size="9" font-weight="600">terminal</text>
+
+        <!-- =============================================================
+             LAYER 5: RESULT COLLECTION
+             ============================================================= -->
+
+        <!-- Arrow: workers → result collector -->
+        <path d="M 190 780 L 190 800 Q 190 810 200 810 L 460 810 Q 470 810 470 800 L 470 785" fill="none" stroke="#34d399" stroke-width="1.2" marker-end="url(#arrow-emerald)"/>
+        <path d="M 460 780 L 460 810" fill="none" stroke="#fbbf24" stroke-width="1.2"/>
+        <path d="M 730 780 L 730 810" fill="none" stroke="#fb923c" stroke-width="1.2"/>
+
+        <!-- =============================================================
+             LEGEND
+             ============================================================= -->
+        <rect x="50" y="790" width="940" height="28" rx="6" fill="rgba(15, 23, 42, 0.6)" stroke="#1e293b" stroke-width="1"/>
+
+        <rect x="65" y="798" width="12" height="10" rx="2" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1"/>
+        <text x="81" y="806" fill="#94a3b8" font-size="8">Frontend</text>
+
+        <rect x="145" y="798" width="12" height="10" rx="2" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+        <text x="161" y="806" fill="#94a3b8" font-size="8">Backend/Worker</text>
+
+        <rect x="245" y="798" width="12" height="10" rx="2" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="261" y="806" fill="#94a3b8" font-size="8">Database</text>
+
+        <rect x="325" y="798" width="12" height="10" rx="2" fill="rgba(120, 53, 15, 0.3)" stroke="#fbbf24" stroke-width="1"/>
+        <text x="341" y="806" fill="#94a3b8" font-size="8">ACP Agent</text>
+
+        <rect x="415" y="798" width="12" height="10" rx="2" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1"/>
+        <text x="431" y="806" fill="#94a3b8" font-size="8">Terminal Agent</text>
+
+        <rect x="520" y="798" width="12" height="10" rx="2" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1"/>
+        <text x="536" y="806" fill="#94a3b8" font-size="8">Utility</text>
+
+        <rect x="590" y="798" width="12" height="10" rx="2" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+        <text x="606" y="806" fill="#94a3b8" font-size="8">External</text>
+
+        <line x1="675" y1="803" x2="687" y2="803" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+        <text x="691" y="806" fill="#94a3b8" font-size="8">Data flow</text>
+
+        <rect x="760" y="798" width="12" height="10" rx="2" fill="transparent" stroke="#34d399" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="776" y="806" fill="#94a3b8" font-size="8">Boundary</text>
+
+        <rect x="850" y="798" width="12" height="10" rx="2" fill="transparent" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,3"/>
+        <text x="866" y="806" fill="#94a3b8" font-size="8">Fleet</text>
+      </svg>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Оркестратор</h3>
+        </div>
+        <ul>
+          <li>• Чистый Hermes profile, одна роль: orchestrator</li>
+          <li>• Принимает задачи из CLI, Telegram, Discord, API</li>
+          <li>• Разбивает проекты на подзадачи (task_breakdown)</li>
+          <li>• Назначает исполнителей (task_assign)</li>
+          <li>• Собирает результаты, обновляет статусы</li>
+          <li>• Сохраняет всё в persistent SQLite store</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Project Store (SQLite)</h3>
+        </div>
+        <ul>
+          <li>• Живёт вечно — не в памяти сессии</li>
+          <li>• Таблица projects: id, name, client, status</li>
+          <li>• Таблица tasks: id, project_id, parent_id, title</li>
+          <li>• assignee, priority, deadline, status</li>
+          <li>• История изменений для аудита</li>
+          <li>• Общая БД с сессиями (state.db)</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Agent Fleet</h3>
+        </div>
+        <ul>
+          <li>• Hermes Workers: через delegate_task, N параллельно</li>
+          <li>• Claude Code / Codex: через ACP протокол</li>
+          <li>• OpenClaw / Gemini: через terminal</li>
+          <li>• Любой MCP-сервер: через MCP</li>
+          <li>• Результаты собираются обратно в orchestrator</li>
+          <li>• Статусы задач обновляются автоматически</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">
+      Hermes-Orchestrator Architecture • один инстанс, полный контроль • 2026
+    </p>
+  </div>
+</body>
+</html>
